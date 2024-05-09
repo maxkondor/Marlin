@@ -530,6 +530,14 @@
     #define TFT_HEIGHT                       320
   #endif
 
+  #define TOUCH_CS_PIN             EXP1_05_PIN  // SPI1_NSS
+  #define TOUCH_SCK_PIN            EXP2_02_PIN  // SPI1_SCK
+  #define TOUCH_MISO_PIN           EXP2_01_PIN  // SPI1_MISO
+  #define TOUCH_MOSI_PIN           EXP2_06_PIN  // SPI1_MOSI
+  #define TFT_CS_PIN               EXP1_07_PIN  // SPI1_CS
+  #define TFT_DC_PIN               EXP1_08_PIN  // SPI1_RS
+  #define TFT_A0_PIN                TFT_DC_PIN
+
   #if ENABLED(BTT_TFT35_SPI_V1_0)
 
     /**
@@ -583,9 +591,7 @@
      *                       ------                                   ------
      *                        EXP1                                     EXP2
      */
-    #define TFT_CS_PIN               EXP1_07_PIN  // SPI1_CS
-    #define TFT_DC_PIN               EXP1_08_PIN  // SPI1_RS
-    #define TFT_A0_PIN                TFT_DC_PIN
+
 
     #define TFT_RESET_PIN            EXP1_04_PIN
 
@@ -594,11 +600,6 @@
 
     #define TOUCH_BUTTONS_HW_SPI
     #define TOUCH_BUTTONS_HW_SPI_DEVICE        1
-
-    #define TOUCH_CS_PIN             EXP1_05_PIN  // SPI1_NSS
-    #define TOUCH_SCK_PIN            EXP2_02_PIN  // SPI1_SCK
-    #define TOUCH_MISO_PIN           EXP2_01_PIN  // SPI1_MISO
-    #define TOUCH_MOSI_PIN           EXP2_06_PIN  // SPI1_MOSI
 
     #define LCD_READ_ID                     0xD3
     #define LCD_USE_DMA_SPI
