@@ -118,12 +118,12 @@
 #endif
 
 #define CRITICAL_SECTION_START        \
-  uint32_t primask = __get_PRIMASK(); \
-  (void)__iCliRetVal()
+  uint32_t primask = __get_PRIMASK(); 
+  //(void)__iCliRetVal()
 
 #define CRITICAL_SECTION_END \
-  if (!primask)              \
-  (void)__iSeiRetVal()
+  if (!primask)              
+  //(void)__iSeiRetVal()
 
 // Disable interrupts
 #define cli() noInterrupts()

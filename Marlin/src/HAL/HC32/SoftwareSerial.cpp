@@ -36,7 +36,6 @@
 //
 #include <stdint.h>
 #include "SoftwareSerial.h"
-#include "bsp_timer.h"
 #include "hc32_ddl.h"
 #include "fastio.h"
 
@@ -45,6 +44,10 @@
 
 // defined in bit-periods
 #define HALFDUPLEX_SWITCH_DELAY 5
+#define TMR_SSERIAL_UNIT        (M4_TMR02)
+#define TMR_SSERIAL_CH          (Tim0_ChannelB)
+#define TMR_SSERIAL_STOP()      TIMER0_Cmd(TMR_SSERIAL_UNIT, TMR_SSERIAL_CH, Disable)
+#define TMR_SSERIAL_RESUM()     TIMER0_Cmd(TMR_SSERIAL_UNIT, TMR_SSERIAL_CH, Enable)
 
 //
 // Statics
@@ -60,6 +63,26 @@ int32_t SoftwareSerial::tx_bit_cnt = 0;
 uint32_t SoftwareSerial::rx_buffer = 0;
 int32_t SoftwareSerial::rx_bit_cnt = -1; // rx_bit_cnt = -1 :  waiting for start bit
 uint32_t SoftwareSerial::cur_speed = 0;
+
+
+static uint32_t get_pclk1Freq(void)
+{
+    stc_clk_freq_t stcClkTmp;
+
+    CLK_GetClockFreq(&stcClkTmp);
+
+    return (stcClkTmp.pclk1Freq);
+}
+
+// static inline en_result_t PORT_ResetBitsMapp(uint8_t PinNum){
+// 	if(PinNum>BOARD_NR_GPIO_PINS)return(Error);
+// 	return (PORT_ResetBits(PIN_MAP[PinNum].gpio_port, PIN_MAP[PinNum].gpio_pin));
+// }
+
+// static inline en_result_t PORT_SetBitsMapp(uint8_t PinNum){
+// 	if(PinNum>BOARD_NR_GPIO_PINS)return(Error);
+// 	return (PORT_SetBits(PIN_MAP[PinNum].gpio_port, PIN_MAP[PinNum].gpio_pin));
+// }
 
 //
 // Private methods
@@ -138,12 +161,12 @@ inline void SoftwareSerial::setTX()
 {
   if (_inverse_logic) {
 //    LL_GPIO_ResetOutputPin(_transmitPinPort, _transmitPinNumber);
-//    PORT_ResetBits(_transmitPinPort,   _transmitPinNumber);
-    PORT_ResetBitsMapp(_transmitPin);
+    PORT_ResetBits(_transmitPinPort,   _transmitPinNumber);
+    //PORT_ResetBitsMapp(_transmitPin);
   } else {
 //    LL_GPIO_SetOutputPin(_transmitPinPort, _transmitPinNumber);
-//    PORT_SetBits(_transmitPinPort,   _transmitPinNumber);
-    PORT_SetBitsMapp(_transmitPin);
+    PORT_SetBits(_transmitPinPort,   _transmitPinNumber);
+    //PORT_SetBitsMapp(_transmitPin);
   }
 
   pinMode(_transmitPin, OUTPUT);
@@ -181,12 +204,12 @@ inline void SoftwareSerial::send()
       // send data (including start and stop bits)
       if (tx_buffer & 1) {
 //        LL_GPIO_SetOutputPin(_transmitPinPort, _transmitPinNumber);
-//        PORT_SetBits(_transmitPinPort,   _transmitPinNumber);
-          PORT_SetBitsMapp(_transmitPin);
+        PORT_SetBits(_transmitPinPort,   _transmitPinNumber);
+          //PORT_SetBitsMapp(_transmitPin);
       } else {
 //        LL_GPIO_ResetOutputPin(_transmitPinPort, _transmitPinNumber);
-//        PORT_ResetBits(_transmitPinPort,   _transmitPinNumber);
-          PORT_ResetBitsMapp(_transmitPin);
+        PORT_ResetBits(_transmitPinPort,   _transmitPinNumber);
+//        PORT_ResetBitsMapp(_transmitPin);
       }
       tx_buffer >>= 1;
       tx_tick_cnt = OVERSAMPLE; // Wait OVERSAMPLE tick to send next bit
