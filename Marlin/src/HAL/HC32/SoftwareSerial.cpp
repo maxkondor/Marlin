@@ -31,14 +31,20 @@
  * http://arduiniana.org.
  */
 
+///@todo: Add timer init functions
+
+
 //
 // Includes
 //
 #include <stdint.h>
 #include "SoftwareSerial.h"
-#include "bsp_timer.h"
 #include "hc32_ddl.h"
 #include "fastio.h"
+
+///@todo: make board layer like STM32
+#define SOFT_SERIAL_TIM M4_TMR02
+#define SOFT_SERIAL_CH  Tim0_ChannelB
 
 
 #define OVERSAMPLE 3 // in RX, Timer will generate interruption OVERSAMPLE time during a bit. Thus OVERSAMPLE ticks in a bit. (interrupt not synchonized with edge).
@@ -61,13 +67,23 @@ uint32_t SoftwareSerial::rx_buffer = 0;
 int32_t SoftwareSerial::rx_bit_cnt = -1; // rx_bit_cnt = -1 :  waiting for start bit
 uint32_t SoftwareSerial::cur_speed = 0;
 
+// this mcu specific helpers
+static uint32_t get_pclk1Freq(void)
+{
+    stc_clk_freq_t stcClkTmp;
+
+    CLK_GetClockFreq(&stcClkTmp);
+
+    return (stcClkTmp.pclk1Freq);
+}
+
 //
 // Private methods
 //
 void SoftwareSerial::setSpeed(uint32_t speed)
 {
   if (speed != cur_speed) {
-    TMR_SSERIAL_STOP();
+    TIMER0_Cmd(SOFT_SERIAL_TIM, SOFT_SERIAL_CH, Disable); // stop the timer
     if (speed != 0) {
       // Disable the timer
       uint32_t clock_rate, cmp_value;
@@ -88,7 +104,7 @@ void SoftwareSerial::setSpeed(uint32_t speed)
 //      timer.setCount(0);
 //      timer.attachInterrupt(&handleInterrupt);
 //      timer.resume();
-    TMR_SSERIAL_RESUM();
+    TIMER0_Cmd(SOFT_SERIAL_TIM, SOFT_SERIAL_CH, Enable); // start the timer
     } else {
       
     }
@@ -139,11 +155,13 @@ inline void SoftwareSerial::setTX()
   if (_inverse_logic) {
 //    LL_GPIO_ResetOutputPin(_transmitPinPort, _transmitPinNumber);
 //    PORT_ResetBits(_transmitPinPort,   _transmitPinNumber);
-    PORT_ResetBitsMapp(_transmitPin);
+//    PORT_ResetBitsMapp(_transmitPin);
+    digitalWrite(_transmitPin, LOW);
+    
   } else {
 //    LL_GPIO_SetOutputPin(_transmitPinPort, _transmitPinNumber);
 //    PORT_SetBits(_transmitPinPort,   _transmitPinNumber);
-    PORT_SetBitsMapp(_transmitPin);
+    digitalWrite(_transmitPin, HIGH);
   }
 
   pinMode(_transmitPin, OUTPUT);
@@ -182,11 +200,13 @@ inline void SoftwareSerial::send()
       if (tx_buffer & 1) {
 //        LL_GPIO_SetOutputPin(_transmitPinPort, _transmitPinNumber);
 //        PORT_SetBits(_transmitPinPort,   _transmitPinNumber);
-          PORT_SetBitsMapp(_transmitPin);
+//        PORT_SetBitsMapp(_transmitPin);
+          digitalWrite(_transmitPin, HIGH);
       } else {
 //        LL_GPIO_ResetOutputPin(_transmitPinPort, _transmitPinNumber);
 //        PORT_ResetBits(_transmitPinPort,   _transmitPinNumber);
-          PORT_ResetBitsMapp(_transmitPin);
+//        PORT_ResetBitsMapp(_transmitPin);
+          digitalWrite(_transmitPin, LOW);
       }
       tx_buffer >>= 1;
       tx_tick_cnt = OVERSAMPLE; // Wait OVERSAMPLE tick to send next bit

@@ -26,6 +26,8 @@
 #include <core_hooks.h>
 #include <drivers/panic/panic.h>
 
+#include "hc32f460_spi.h"
+
 //
 // Emergency Parser
 //

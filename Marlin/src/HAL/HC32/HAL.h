@@ -38,6 +38,7 @@
 #include "fastio.h"
 #include "timers.h"
 #include "MarlinSerial.h"
+#include "cm4_atomic.h"
 
 #include <stdint.h>
 
@@ -117,12 +118,12 @@
 #define analogInputToDigitalPin(p) (p)
 #endif
 
-#define CRITICAL_SECTION_START        \
+#define CRITICAL_SECTION_START()      \
   uint32_t primask = __get_PRIMASK(); \
   (void)__iCliRetVal()
 
-#define CRITICAL_SECTION_END \
-  if (!primask)              \
+#define CRITICAL_SECTION_END() \
+  if (!primask)                \
   (void)__iSeiRetVal()
 
 // Disable interrupts
